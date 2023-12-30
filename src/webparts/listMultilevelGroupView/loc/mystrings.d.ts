@@ -1,7 +1,8 @@
 declare interface IListMultilevelGroupViewWebPartStrings {
   PropertyPaneDescription: string;
   BasicGroupName: string;
-  DescriptionFieldLabel: string;
+  ListTitleFieldLabel: string;
+  GroupFieldsFieldLabel: string;
   AppLocalEnvironmentSharePoint: string;
   AppLocalEnvironmentTeams: string;
   AppLocalEnvironmentOffice: string;

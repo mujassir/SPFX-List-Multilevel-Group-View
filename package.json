@@ -22,8 +22,10 @@
     "@pnp/core": "^3.21.0",
     "@pnp/sp": "^3.21.0",
     "@pnp/spfx-controls-react": "3.16.0",
+    "@pnp/spfx-property-controls": "3.15.1",
     "react": "17.0.1",
     "react-dom": "17.0.1",
+    "react-loader-spinner": "^6.1.6",
     "tslib": "2.3.1"
   },
   "devDependencies": {

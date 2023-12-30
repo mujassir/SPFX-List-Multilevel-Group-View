@@ -3,18 +3,32 @@ import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import {
   type IPropertyPaneConfiguration,
-  PropertyPaneTextField
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
 import * as strings from 'ListMultilevelGroupViewWebPartStrings';
+import { IGroupByField } from './models/IGroupByField';
 import ListMultilevelGroupView from './components/ListMultilevelGroupView';
 import { IListMultilevelGroupViewProps } from './components/IListMultilevelGroupViewProps';
+import { PropertyFieldCollectionData, CustomCollectionFieldType } from '@pnp/spfx-property-controls/lib/PropertyFieldCollectionData';
+import { PropertyFieldListPicker, PropertyFieldListPickerOrderBy } from '@pnp/spfx-property-controls/lib/PropertyFieldListPicker';
+import {
+  PropertyFieldColumnPicker,
+  PropertyFieldColumnPickerOrderBy, IColumnReturnProperty, IPropertyFieldRenderOption
+} from '@pnp/spfx-property-controls/lib/PropertyFieldColumnPicker';
+import { PropertyFieldOrder } from '@pnp/spfx-property-controls/lib/PropertyFieldOrder';
+import { CalloutTriggers } from '@pnp/spfx-property-controls/lib/Callout';
+import { PropertyFieldCheckboxWithCallout } from '@pnp/spfx-property-controls/lib/PropertyFieldCheckboxWithCallout';
 
 
 export interface IListMultilevelGroupViewWebPartProps {
-  description: string;
+  listTitle: string;
+  showFilter: boolean;
+  lists: any;
+  listColumns: any[];
+  orderedListColumns: any[];
+  groupByFields: IGroupByField[];
 }
 
 export default class ListMultilevelGroupViewWebPart extends BaseClientSideWebPart<IListMultilevelGroupViewWebPartProps> {
@@ -27,7 +41,12 @@ export default class ListMultilevelGroupViewWebPart extends BaseClientSideWebPar
     const element: React.ReactElement<IListMultilevelGroupViewProps> = React.createElement(
       ListMultilevelGroupView,
       {
-        description: this.properties.description,
+        listTitle: this.properties.listTitle,
+        showFilter: this.properties.showFilter,
+        lists: this.properties.lists,
+        listColumns: this.properties.listColumns,
+        orderedListColumns: this.properties.orderedListColumns,
+        groupByFields: this.properties.groupByFields,
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
@@ -39,10 +58,10 @@ export default class ListMultilevelGroupViewWebPart extends BaseClientSideWebPar
     ReactDom.render(element, this.domElement);
   }
 
-  protected onInit(): Promise<void> {
-    return this._getEnvironmentMessage().then(message => {
-      this._environmentMessage = message;
-    });
+  protected async onInit(): Promise<void> {
+    const message = await this._getEnvironmentMessage();
+    this._environmentMessage = message;
+    this.properties.orderedListColumns = this.properties.listColumns;
   }
 
 
@@ -111,8 +130,83 @@ export default class ListMultilevelGroupViewWebPart extends BaseClientSideWebPar
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
+                PropertyFieldListPicker('lists', {
+                  label: 'Select a list',
+                  includeHidden: false,
+                  selectedList: this.properties.lists,
+                  orderBy: PropertyFieldListPickerOrderBy.Title,
+                  disabled: false,
+                  includeListTitleAndUrl: true,
+                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
+                  properties: this.properties,
+                  context: this.context,
+                  deferredValidationTime: 0,
+                  key: 'listPickerFieldId'
+                }),
+                PropertyFieldColumnPicker('listColumns', {
+                  label: 'Select columns',
+                  context: this.context,
+                  selectedColumn: this.properties.listColumns,
+                  listId: this.properties.lists ? this.properties.lists.id : null,
+                  disabled: false,
+                  orderBy: PropertyFieldColumnPickerOrderBy.Title,
+                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
+                  properties: this.properties,
+                  deferredValidationTime: 0,
+                  key: 'multiColumnPickerFieldId',
+                  displayHiddenColumns: false,
+                  columnReturnProperty: IColumnReturnProperty.Title,
+                  multiSelect: true,
+                  renderFieldAs: IPropertyFieldRenderOption["Multiselect Dropdown"]
+                }),
+                PropertyFieldCollectionData("groupByFields", {
+                  key: "groupByFields",
+                  label: "Group By Fields",
+                  panelHeader: "Group By Field Collection",
+                  manageBtnLabel: "Manage Group By Fields",
+                  value: this.properties.groupByFields,
+                  fields: [
+                    {
+                      id: "column",
+                      title: "Column",
+                      type: CustomCollectionFieldType.dropdown,
+                      options: this.properties.listColumns ? this.properties.listColumns.map(p=> {return {key: p, text: p}}) : [],
+                      required: true
+                    },
+                    {
+                      id: "sortOrder",
+                      title: "Sort Order",
+                      type: CustomCollectionFieldType.dropdown,
+                      options: [
+                        {
+                          key: "ascending",
+                          text: "Ascending"
+                        },
+                        {
+                          key: "descending",
+                          text: "Descending"
+                        }
+                      ],
+                      required: true
+                    },
+
+                  ],
+                  disabled: false
+                }),
+                PropertyFieldOrder("orderedListColumns", {
+                  key: "orderedListColumns",
+                  label: "Column Display Order",
+                  items: this.properties.orderedListColumns,
+                  properties: this.properties,
+                  onPropertyChange: this.onPropertyPaneFieldChanged
+                }),
+                PropertyFieldCheckboxWithCallout('showFilter', {
+                  calloutTrigger: CalloutTriggers.Click,
+                  key: 'showFiltercheckboxWithCalloutFieldId',
+                  calloutContent: React.createElement('p', {}, 'Check the checkbox to enable searching'),
+                  calloutWidth: 200,
+                  text: 'Enable Search',
+                  checked: this.properties.showFilter
                 })
               ]
             }
