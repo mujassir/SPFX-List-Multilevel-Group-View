@@ -51,12 +51,15 @@ export default class ListMultilevelGroupView extends React.Component<IListMultil
     });
     let viewFields: { name: any; displayName: any; isResizable: boolean; sorting: boolean; }[] = [];
     if (this.props.orderedListColumns) {
+      //const count = this.props.orderedListColumns.length;
       viewFields = this.props.orderedListColumns.map(title => {
         return {
           name: titleToInternalNameMap.get(title) || title,
           displayName: title,
           isResizable: true,
           sorting: true,
+          minWidth: 100,
+          maxWidth: 100
         }
       });
     }
