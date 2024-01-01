@@ -36,9 +36,26 @@
 
 
 
-// :global .ms-List-page{
-//   padding-left: 5px;
-// }
+:global {
+  .ms-List{
+    padding-left: 10px;
+  }
+  .list-level-5 .ms-DetailsRow {
+    margin-left: -50px;
+  }
+  .list-level-4 .ms-DetailsRow {
+    margin-left: -40px;
+  }
+  .list-level-3 .ms-DetailsRow {
+    margin-left: -30px;
+  }
+  .list-level-2 .ms-DetailsRow {
+    margin-left: -20px;
+  }
+  .list-level-1 .ms-DetailsRow {
+    margin-left: -10px;
+  }
+}
 
 :global #workbenchPageContent{
   max-width: 100% !important;
