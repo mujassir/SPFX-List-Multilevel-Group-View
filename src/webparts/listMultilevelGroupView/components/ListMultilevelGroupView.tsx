@@ -99,6 +99,7 @@ export default class ListMultilevelGroupView extends React.Component<IListMultil
   }
 
   public renderListView(): React.ReactElement<IListMultilevelGroupViewProps> {
+    const className = `list-level-${this.state.groupByFields.length + 1}`
     return (
       <ListView
         items={this.state.items}
@@ -110,6 +111,7 @@ export default class ListMultilevelGroupView extends React.Component<IListMultil
         selection={this._getSelection}
         groupByFields={this.state.groupByFields}
         stickyHeader={true}
+        className={className}
       />
     );
   }
@@ -117,15 +119,15 @@ export default class ListMultilevelGroupView extends React.Component<IListMultil
 
   private renderLoader() {
     return (
-        <Oval
-          visible={true}
-          height="50"
-          width="50"
-          secondaryColor="#4dabf5"
-          color="#0078D3"
-          ariaLabel="oval-loading"
-          wrapperStyle={{ display: 'block' }}
-        />
+      <Oval
+        visible={true}
+        height="50"
+        width="50"
+        secondaryColor="#4dabf5"
+        color="#0078D3"
+        ariaLabel="oval-loading"
+        wrapperStyle={{ display: 'block' }}
+      />
     );
   }
 
