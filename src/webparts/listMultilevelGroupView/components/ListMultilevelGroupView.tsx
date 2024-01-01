@@ -9,6 +9,7 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import "@pnp/sp/fields";
+import Constants from '../common/constants';
 
 export default class ListMultilevelGroupView extends React.Component<IListMultilevelGroupViewProps, {}> {
   private _sp: SPFI;
@@ -46,12 +47,20 @@ export default class ListMultilevelGroupView extends React.Component<IListMultil
       titleToInternalNameMap.set(field.Title, field.InternalName);
     });
 
+    let complexFieldNamesArray: string[] = [];
     let internalNamesArray = this.props.listColumns.map(title => {
       return titleToInternalNameMap.get(title) || title; // Fallback to title if mapping not found
     });
     let viewFields: { name: any; displayName: any; isResizable: boolean; sorting: boolean; }[] = [];
     if (this.props.orderedListColumns) {
-      //const count = this.props.orderedListColumns.length;
+
+      const complexFields = allFields.filter(p => this.props.orderedListColumns.indexOf(p.Title) > -1 && p.FieldTypeKind == 20);
+      complexFieldNamesArray = complexFields.map(p => p.InternalName);
+      for (let index = 0; index < internalNamesArray.length; index++) {
+        if (complexFieldNamesArray.indexOf(internalNamesArray[index]) > -1)
+          internalNamesArray[index] = internalNamesArray[index] + "/Title";
+      }
+
       viewFields = this.props.orderedListColumns.map(title => {
         return {
           name: titleToInternalNameMap.get(title) || title,
@@ -77,10 +86,24 @@ export default class ListMultilevelGroupView extends React.Component<IListMultil
 
 
     const items = await this._sp.web.lists.getByTitle(listTitle).items
-      .select(...internalNamesArray).top(2000)();
+      .select(...internalNamesArray)
+      .expand(...complexFieldNamesArray)
+      .top(Constants.Defaults.MaxPageSize)();
+
     this.setState({ isLoading: false });
 
-    this.setState({ items: items });
+    this.setState(
+      {
+        items: items.map(p => {
+
+          if (complexFieldNamesArray.length > 0) {
+            complexFieldNamesArray.forEach(element => {
+              p[element] = p[element].Title;
+            });
+          }
+          return p;
+        })
+      });
   }
 
   public render(): React.ReactElement<IListMultilevelGroupViewProps> {

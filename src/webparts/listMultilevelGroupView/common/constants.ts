@@ -1,13 +1,8 @@
 export default class Constants {
     public static Defaults = {
+     MaxPageSize: 2000 
       
-      
-      Loader: {
-        type: "ThreeDots",
-        color: "#1f2553",
-        height: 25,
-        width: 25,
-      },
+     
     };
   
    
